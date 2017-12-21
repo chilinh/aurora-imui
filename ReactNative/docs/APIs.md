@@ -56,7 +56,10 @@ Refer to iOS,Android example
     - [avatarSize](#avatarsize)
     - [avatarCornerRadius](#avatarcornerradius)
     - [isShowDisplayName](#isShowdisplayname)
+    - [messageListBackgroundColor](#messagelistbackgroundcolor)
 - [ChatInput](#chatinput)
+  - [Props customizable style]()
+    - [chatInputBackgroupColor](#chatInputbackgroupcolor)
   - [Props Event]()
     - [onSendText](#onsendtext)
     - [onSendGalleryFile](#onsendgalleryfile)
@@ -299,7 +302,7 @@ Fires when touch message list.
 
 **PropTypes.string:** 
 
-Set outgoing message's text color, ```sendBubbleTextColor="#000000"```。
+Set outgoing message's text color, ```sendBubbleTextColor="#000000"```.
 
 ------
 
@@ -307,7 +310,7 @@ Set outgoing message's text color, ```sendBubbleTextColor="#000000"```。
 
 **PropTypes.string**
 
-Set incoming message's text color, ```sendBubbleTextColor="#000000"```。
+Set incoming message's text color, ```sendBubbleTextColor="#000000"```.
 
 ------
 
@@ -397,11 +400,46 @@ Example: ```isShowDisplayName={ture}```。
 
 ------
 
+#### messageListBackgroundColor
+
+**PropTypes.string:**
+
+Set messageList' background  color. **In Android, you should add this property in  `AndroidPtrlayout`.**
+
+```
+<AndroidPtrLayout
+   ref="PtrLayout"
+   messageListBackgroundColor={"#f3f3f3"}
+/>
+```
+
+
+
+Example:  ```messageListBackgroundColor="#000000"```
+
+------
+
 
 
 ## ChatInput
 
-#### ChatInput Event Callback
+### Props customizable style
+
+***
+
+#### chatInputBackgroupColor
+
+**PropTypes.string:**
+
+Set chatInput' background  color.
+
+Example:  ```chatInputBackgroupColor="#000000"```
+
+***
+
+
+
+### ChatInput Event Callback
 
 ------
 
