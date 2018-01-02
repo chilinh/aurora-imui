@@ -42,8 +42,8 @@
             android:layout_height="match_parent"
             app:avatarHeight="48dp"
             app:avatarWidth="48dp"
-            app:showReceiverDisplayName="SHOW"
-            app:showSenderDisplayName="HIDE"
+            app:showReceiverDisplayName="true"
+            app:showSenderDisplayName="false"
             app:avatarRadius="5dp"
             app:bubbleMaxWidth="0.70"
             app:dateTextSize="14sp"
@@ -63,7 +63,8 @@
         android:id="@+id/chat_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        app:showSelectAlbum="true"/>
 
 
 </imui.jiguang.cn.imuisample.views.ChatView>

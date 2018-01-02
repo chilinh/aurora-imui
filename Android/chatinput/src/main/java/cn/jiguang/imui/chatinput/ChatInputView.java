@@ -45,7 +45,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sj.emoji.EmojiBean;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -59,7 +58,12 @@ import cn.jiguang.imui.chatinput.camera.CameraNew;
 import cn.jiguang.imui.chatinput.camera.CameraOld;
 import cn.jiguang.imui.chatinput.camera.CameraSupport;
 import cn.jiguang.imui.chatinput.emoji.Constants;
+import cn.jiguang.imui.chatinput.emoji.EmojiBean;
 import cn.jiguang.imui.chatinput.emoji.EmojiView;
+import cn.jiguang.imui.chatinput.emoji.listener.EmoticonClickListener;
+import cn.jiguang.imui.chatinput.emoji.data.EmoticonEntity;
+import cn.jiguang.imui.chatinput.emoji.widget.EmoticonsEditText;
+import cn.jiguang.imui.chatinput.emoji.EmoticonsKeyboardUtils;
 import cn.jiguang.imui.chatinput.listener.CameraControllerListener;
 import cn.jiguang.imui.chatinput.listener.CameraEventListener;
 import cn.jiguang.imui.chatinput.listener.OnCameraCallbackListener;
@@ -73,18 +77,10 @@ import cn.jiguang.imui.chatinput.record.ProgressButton;
 import cn.jiguang.imui.chatinput.record.RecordControllerView;
 import cn.jiguang.imui.chatinput.record.RecordVoiceButton;
 import cn.jiguang.imui.chatinput.utils.SimpleCommonUtils;
-import sj.keyboard.data.EmoticonEntity;
-import sj.keyboard.interfaces.EmoticonClickListener;
-import sj.keyboard.utils.EmoticonsKeyboardUtils;
-import sj.keyboard.widget.EmoticonsEditText;
 
 public class ChatInputView extends LinearLayout
         implements View.OnClickListener, TextWatcher, RecordControllerView.OnRecordActionListener,
         OnFileSelectedListener, CameraEventListener, ViewTreeObserver.OnGlobalLayoutListener {
-
-    public static final byte KEYBOARD_STATE_SHOW = -3;
-    public static final byte KEYBOARD_STATE_HIDE = -2;
-    public static final byte KEYBOARD_STATE_INIT = -1;
 
     private EmoticonsEditText mChatInput;
     private TextView mSendCountTv;
@@ -113,6 +109,7 @@ public class ChatInputView extends LinearLayout
     private RecordVoiceButton mRecordVoiceBtn;
 
     SelectPhotoView mSelectPhotoView;
+    private ImageButton mSelectAlbumIb;
 
     private FrameLayout mCameraFl;
     private TextureView mTextureView;
@@ -132,7 +129,6 @@ public class ChatInputView extends LinearLayout
 
     private InputMethodManager mImm;
     private Window mWindow;
-    private int mLastClickId = 0;
 
     private int mWidth;
     private int mHeight;
@@ -236,6 +232,7 @@ public class ChatInputView extends LinearLayout
         mSwitchCameraBtn = (ImageButton) findViewById(R.id.aurora_ib_camera_switch);
 
         mSelectPhotoView = (SelectPhotoView) findViewById(R.id.aurora_view_selectphoto);
+        mSelectAlbumIb = (ImageButton) findViewById(R.id.aurora_imagebtn_selectphoto_album);
         mSelectPhotoView.setOnFileSelectedListener(this);
         mSelectPhotoView.initData();
         mEmojiRl = (EmojiView) findViewById(R.id.aurora_rl_emoji_container);
@@ -276,8 +273,8 @@ public class ChatInputView extends LinearLayout
                 if (!mChatInput.isFocused()) {
                     mChatInput.setFocusable(true);
                     mChatInput.setFocusableInTouchMode(true);
-                    mShowSoftInput = true;
                 }
+                mShowSoftInput = true;
                 return false;
             }
         });
@@ -290,22 +287,22 @@ public class ChatInputView extends LinearLayout
             if (isDelBtn) {
                 SimpleCommonUtils.delClick(mChatInput);
             } else {
-                if(o == null){
+                if (o == null) {
                     return;
                 }
-                if(actionType == Constants.EMOTICON_CLICK_BIGIMAGE){
+                if (actionType == Constants.EMOTICON_CLICK_BIGIMAGE) {
 //                    if(o instanceof EmoticonEntity){
 //                        OnSendImage(((EmoticonEntity)o).getIconUri());
 //                    }
                 } else {
                     String content = null;
-                    if(o instanceof EmojiBean){
-                        content = ((EmojiBean)o).emoji;
-                    } else if(o instanceof EmoticonEntity){
-                        content = ((EmoticonEntity)o).getContent();
+                    if (o instanceof EmojiBean) {
+                        content = ((EmojiBean) o).emoji;
+                    } else if (o instanceof EmoticonEntity) {
+                        content = ((EmoticonEntity) o).getContent();
                     }
 
-                    if(TextUtils.isEmpty(content)){
+                    if (TextUtils.isEmpty(content)) {
                         return;
                     }
                     int index = mChatInput.getSelectionStart();
@@ -338,6 +335,7 @@ public class ChatInputView extends LinearLayout
         mSendBtn.setBackground(mStyle.getSendBtnBg());
         mSendBtn.setImageResource(mStyle.getSendBtnIcon());
         mSendCountTv.setBackground(mStyle.getSendCountBg());
+        mSelectAlbumIb.setVisibility(mStyle.getShowSelectAlbum() ? VISIBLE : INVISIBLE);
 
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
         mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -423,23 +421,13 @@ public class ChatInputView extends LinearLayout
                     mSendCountTv.setVisibility(View.INVISIBLE);
                     mSelectPhotoView.resetCheckState();
                     dismissMenuLayout();
+                    mImm.hideSoftInputFromWindow(getWindowToken(), 0);
+                    mWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                            | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                    mShowSoftInput = false;
                 }
 
             } else {
-                if (mMenuContainer.getVisibility() != VISIBLE) {
-                    dismissSoftInputAndShowMenu();
-                } else if (view.getId() == mLastClickId && mMenuContainer.getVisibility() == VISIBLE) {
-                    if (mShowSoftInput) {
-                        EmoticonsKeyboardUtils.closeSoftKeyboard(mChatInput);
-                        mShowSoftInput = false;
-                    } else {
-                        EmoticonsKeyboardUtils.openSoftKeyboard(mChatInput);
-                        mShowSoftInput = true;
-                    }
-
-                    return;
-                }
-
                 if (view.getId() == R.id.aurora_framelayout_menuitem_voice) {
                     if (mListener != null && mListener.switchToMicrophoneMode()) {
                         showRecordVoiceLayout();
@@ -471,11 +459,17 @@ public class ChatInputView extends LinearLayout
                     }
                 } else if (view.getId() == R.id.aurora_framelayout_menuitem_emoji) {
                     if (mListener != null && mListener.switchToEmojiMode()) {
-                            showEmojiLayout();
+                        showEmojiLayout();
                     }
                 }
 
-                mLastClickId = view.getId();
+                if (mMenuContainer.getVisibility() != VISIBLE) {
+                    dismissSoftInputAndShowMenu();
+                }
+                if (mShowSoftInput) {
+                    EmoticonsKeyboardUtils.closeSoftKeyboard(mChatInput);
+                    mShowSoftInput = false;
+                }
             }
         }
     };
@@ -1039,7 +1033,7 @@ public class ChatInputView extends LinearLayout
             public void onAnimationEnd(Animator animator) {
                 if (hasContent) {
                     mSendBtn.setImageDrawable(ContextCompat.getDrawable(getContext(),
-                            R.drawable.aurora_menuitem_send_pres));
+                            mStyle.getSendBtnPressedIcon()));
                 } else {
                     mSendBtn.setImageDrawable(ContextCompat.getDrawable(getContext(),
                             R.drawable.aurora_menuitem_send));
@@ -1250,5 +1244,33 @@ public class ChatInputView extends LinearLayout
 
     public EmojiView getEmojiContainer() {
         return mEmojiRl;
+    }
+
+    public ChatInputStyle getStyle() {
+        return this.mStyle;
+    }
+
+    public ImageButton getVoiceBtn() {
+        return this.mVoiceBtn;
+    }
+
+    public ImageButton getPhotoBtn() {
+        return this.mPhotoBtn;
+    }
+
+    public ImageButton getCameraBtn() {
+        return this.mCameraBtn;
+    }
+
+    public ImageButton getEmojiBtn() {
+        return this.mEmojiBtn;
+    }
+
+    public ImageButton getSendBtn() {
+        return this.mSendBtn;
+    }
+
+    public ImageButton getSelectAlbumBtn() {
+        return this.mSelectAlbumIb;
     }
 }
