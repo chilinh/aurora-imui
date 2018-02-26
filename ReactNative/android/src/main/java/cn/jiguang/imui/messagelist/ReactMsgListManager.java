@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.Target;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
@@ -291,6 +292,12 @@ public class ReactMsgListManager extends ViewGroupManager<PullToRefreshLayout> i
         mAdapter.pauseVoice();
     }
 
+    @ReactProp(name = "isAllowPullToRefresh")
+    public void setAllowPullToRefresh(PullToRefreshLayout root, boolean isAllowPullToRefresh) {
+        Log.i(REACT_MESSAGE_LIST, "Set isAllowPullToRefresh: " + isAllowPullToRefresh);
+        root.setKeepHeaderWhenRefresh(isAllowPullToRefresh);
+    }
+
     @ReactProp(name = "sendBubble")
     public void setSendBubble(PullToRefreshLayout root, ReadableMap map) {
         int resId = mContext.getResources().getIdentifier(map.getString("imageName"),
@@ -378,6 +385,11 @@ public class ReactMsgListManager extends ViewGroupManager<PullToRefreshLayout> i
     public void setAvatarWidth(PullToRefreshLayout root, ReadableMap map) {
         mMessageList.setAvatarWidth(dip2px(map.getInt("width")));
         mMessageList.setAvatarHeight(dip2px(map.getInt("height")));
+    }
+
+    @ReactProp(name = "avatarCornerRadius")
+    public void setAvatarCornerRadius(PullToRefreshLayout root, int radius) {
+        mMessageList.setAvatarRadius(radius);
     }
 
     /**
